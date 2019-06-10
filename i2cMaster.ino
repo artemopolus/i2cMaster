@@ -1,5 +1,7 @@
 #include <Wire.h>
 
+#define SMPL_SENDER
+
 byte AddressList[115] = {0};
 int nDevices = 0;
 int powerPin = 11;
@@ -7,6 +9,10 @@ int ctrlPin = 10;
 char message[10] = {0};
 
 int NbBytesSend = 5;
+
+int IncomingByte = 0;
+
+char TestMessage[] = "abc";
 
 uint8_t ReceiveBuffer[100] = {0};
 
@@ -32,6 +38,24 @@ void setup() {
 }
 
 void loop() {
+  #ifdef SMPL_SENDER
+  if(Serial.available() > 0)
+  {
+    IncomingByte = Serial.read();
+    switch(IncomingByte)
+    {
+      case 'a':
+      byte str[3];
+      for(int i = 0; i < 3; i++)
+      {
+        str[i] = TestMessage[i];
+      }
+      writeStr(AddressList[CurrentAddress],str,3);
+      break;
+    }
+  }
+  
+  #else
     // считываем из порта 0, и отсылаем с порта 1
   int Bytes2Read = Serial.available();
   
@@ -111,4 +135,5 @@ void loop() {
 //   }
 // #endif
 //   delay(2000);
+#endif
 }
