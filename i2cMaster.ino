@@ -15,7 +15,7 @@ int CurrentAddress = 0;
 void setup() {
   // put your setup code here, to run once:
   Wire.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.print("\nSetup i2c sacnner\n");
 
 #ifdef PIN_CTRL
@@ -26,7 +26,9 @@ void setup() {
 #endif
 
 
-  while(!getAvailableI2Cadress(AddressList));
+  while(!getAvailableI2Cadress(AddressList)){
+    delay(1000);
+  }
 }
 
 void loop() {

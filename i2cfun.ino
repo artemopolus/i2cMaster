@@ -20,8 +20,10 @@ int getAvailableI2Cadress(byte * Addresses)
       break;
     }
   }
-  if (nDevices == 0)
+  if (count == 0)
     Serial.println("No I2C devices found");
+  else
+    nDevices = count;
   return count;
 }
 void scanAddress()
