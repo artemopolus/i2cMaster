@@ -14,7 +14,9 @@ int IncomingByte = 0;
 
 char TestMessage[] = "abc";
 
-uint8_t ReceiveBuffer[100] = {0};
+#define RECEIVEBUFFER_CNT 80
+
+uint8_t ReceiveBuffer[RECEIVEBUFFER_CNT] = {0};
 
 int CurrentAddress = 0;
 
@@ -50,7 +52,16 @@ void loop() {
       {
         str[i] = TestMessage[i];
       }
-      writeStr(AddressList[CurrentAddress],str,3);
+      for(int i = 0; i < nDevices; i++)
+      {
+        writeStr(AddressList[i],str,3);
+      }
+      break;
+      case 'b':
+      for(int i = 0; i < nDevices; i++)
+      {
+        readStr(AddressList[i], RECEIVEBUFFER_CNT);
+      }
       break;
     }
   }
