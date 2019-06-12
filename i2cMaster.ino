@@ -12,7 +12,7 @@ int NbBytesSend = 5;
 
 int IncomingByte = 0;
 
-char TestMessage[] = "abc";
+char TestMessage[] = "abcd";
 
 #define RECEIVEBUFFER_CNT 80
 
@@ -47,14 +47,14 @@ void loop() {
     switch(IncomingByte)
     {
       case 'a':
-      byte str[3];
-      for(int i = 0; i < 3; i++)
+      byte str[4];
+      for(int i = 0; i < 4; i++)
       {
         str[i] = TestMessage[i];
       }
       for(int i = 0; i < nDevices; i++)
       {
-        writeStr(AddressList[i],str,3);
+        writeStr(AddressList[i],str,4);
       }
       break;
       case 'b':

@@ -99,11 +99,20 @@ void readData(const byte address,const int nbData)
 }
 int readStr(const byte address, const int nbData)
 {
-  Wire.requestFrom(address,nbData);
-  int count = Wire.read();
+  // Wire.requestFrom(address,nbData);
+  // int count = Wire.read();
+  int count = nbData;
+  Serial.print("address=");
+  Serial.print(address); Serial.print("[0x"); Serial.print(address, HEX); Serial.println("]\nData:");
+  Serial.print("Count=");
   Serial.print(count); Serial.print("[0x"); Serial.print(count, HEX); Serial.println("]\nData:");
   Wire.requestFrom(address,count);
-  int counter = 0;
+  int counter = 0, i = 0;
+  while(!Wire.available())
+  {
+    if(i < 1000)  i++;
+      else break;
+  }
   while(Wire.available())
   {
     char word = Wire.read();
@@ -111,6 +120,7 @@ int readStr(const byte address, const int nbData)
     ReceiveBuffer[counter] = (uint8_t)word;
     counter++;
   }
-  Serial.print("\ndone!");
+  Serial.print("done! Data count=");
+  Serial.println(counter);
   return counter;
 }
