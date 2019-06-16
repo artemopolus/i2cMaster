@@ -5,6 +5,13 @@
 #define DURATION_1s00  1000000 
 #define DURATION_TIMER DURATION_1s00  //0.01 s
 
+#define EXREAD  0x01
+#define EXWRITE 0x02
+
+#define RECEIVEBUFFER_CNT 80
+
+#define SEND_NOTHING_MSG
+
 int EnableRead = 0;
 
 byte AddressList[115] = {0};
@@ -17,12 +24,13 @@ int NbBytesSend = 5;
 
 int IncomingByte = 0;
 
-#define EXREAD  0x01
-#define EXWRITE 0x02
+
 
 uint8_t TestMessage[] = {0,EXWRITE,0,0};
 
-#define RECEIVEBUFFER_CNT 80
+
+
+
 
 uint8_t ReceiveBuffer[RECEIVEBUFFER_CNT] = {0};
 
@@ -85,6 +93,12 @@ void setup() {
   // Start an alarm
   timerAlarmEnable(timer);
 
+
+  Serial.println("cmd a: send smpl message 0 WRITE 0 0");
+  Serial.println("cmd b: get data from i2c slave");
+  Serial.println("cmd c: enable cycle reading");
+  Serial.println("cmd v: disable cycle reading");
+
 }
 
 void loop() {
@@ -113,13 +127,22 @@ void loop() {
       break;
       case 'c':
       EnableRead = 1;
-      byte msgcmd[] = {0,EXWRITE,0,1};
+      byte msgstart[] = {0,EXWRITE,0,1};
       for(int i = 0; i < nDevices; i++)
       {
-        writeStr(AddressList[i],msgcmd,4);
+        writeStr(AddressList[i],msgstart,4);
       }
       Serial.println("Enable cycling reading");
       break;
+       case 'd':
+      // EnableRead = 0;
+      // byte msgstop[] = {0,EXWRITE,0,0};
+      // for(int i = 0; i < nDevices; i++)
+      // {
+      //   writeStr(AddressList[i],msgstop,4);
+      // }
+      // Serial.println("Disable cycling reading");
+       break;
     }
   }
 
@@ -130,7 +153,9 @@ void loop() {
         if(!readStrData(AddressList[i], RECEIVEBUFFER_CNT)) Serial.println("Nothing to read");
       }
     }else{
+      #ifdef SEND_NOTHING_MSG
       Serial.println("Doing nothing");
+      #endif
     }
   }
   
