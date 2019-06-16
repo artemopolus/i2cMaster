@@ -69,7 +69,7 @@ void writeStr(const byte address, byte * values, const int length)
   Wire.beginTransmission(address);
   for(int i = 0; i < length; i++)
   {
-    if(!values[i]) break;
+    //if(!values[i]) break;
     Wire.write(values[i]);
     Serial.print((char)values[i]);
     Serial.print("[");
@@ -113,6 +113,28 @@ int readStr(const byte address, const int nbData)
     if(i < 1000)  i++;
       else break;
   }
+  while(Wire.available())
+  {
+    char word = Wire.read();
+    Serial.print(word); Serial.print("[0x"); Serial.print(word, HEX); Serial.print("] ");
+    ReceiveBuffer[counter] = (uint8_t)word;
+    counter++;
+  }
+  Serial.print("done! Data count=");
+  Serial.println(counter);
+  return counter;
+}
+int readStrData(const byte address, const int nbData)
+{
+  // Wire.requestFrom(address,nbData);
+  // int count = Wire.read();
+  int count = nbData;
+  Serial.print("address=");
+  Serial.print(address); Serial.print("[0x"); Serial.print(address, HEX); Serial.print("]");
+  Serial.print("Count=");
+  Serial.print(count); Serial.print("[0x"); Serial.print(count, HEX); Serial.println("]");
+  Wire.requestFrom(address,count);
+  int counter = 0, i = 0;
   while(Wire.available())
   {
     char word = Wire.read();

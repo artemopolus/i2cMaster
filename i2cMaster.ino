@@ -1,6 +1,11 @@
 #include <Wire.h>
 
 #define SMPL_SENDER
+#define DURATION_0s01  10000 
+#define DURATION_1s00  1000000 
+#define DURATION_TIMER DURATION_1s00  //0.01 s
+
+int EnableRead = 0;
 
 byte AddressList[115] = {0};
 int nDevices = 0;
@@ -12,13 +17,35 @@ int NbBytesSend = 5;
 
 int IncomingByte = 0;
 
-char TestMessage[] = "abcd";
+#define EXREAD  0x01
+#define EXWRITE 0x02
+
+uint8_t TestMessage[] = {0,EXWRITE,0,0};
 
 #define RECEIVEBUFFER_CNT 80
 
 uint8_t ReceiveBuffer[RECEIVEBUFFER_CNT] = {0};
 
 int CurrentAddress = 0;
+
+/* для таймера */
+hw_timer_t * timer = NULL;
+volatile SemaphoreHandle_t timerSemaphore;
+portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+/* счетчики */
+volatile uint32_t isrCounter = 0;
+volatile uint32_t lastIsrAt = 0;
+
+void IRAM_ATTR onTimer(){
+  // Increment the counter and set the time of ISR
+  portENTER_CRITICAL_ISR(&timerMux);
+  isrCounter++;
+  lastIsrAt = millis();
+  portEXIT_CRITICAL_ISR(&timerMux);
+  // Give a semaphore that we can check in the loop
+  xSemaphoreGiveFromISR(timerSemaphore, NULL);
+  // It is safe to use digitalRead/Write here if you want to toggle an output
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -37,6 +64,27 @@ void setup() {
   while(!getAvailableI2Cadress(AddressList)){
     delay(1000);
   }
+
+  //init timer
+  /* настройка таймера*/
+  // Create semaphore to inform us when the timer has fired
+  timerSemaphore = xSemaphoreCreateBinary();
+
+  // Use 1st timer of 4 (counted from zero).
+  // Set 80 divider for prescaler (see ESP32 Technical Reference Manual for more
+  // info).
+  timer = timerBegin(0, 80, true);
+
+  // Attach onTimer function to our timer.
+  timerAttachInterrupt(timer, &onTimer, true);
+
+  // Set alarm to call onTimer function every second (value in microseconds).
+  // Repeat the alarm (third parameter)
+  timerAlarmWrite(timer, DURATION_TIMER, true);
+
+  // Start an alarm
+  timerAlarmEnable(timer);
+
 }
 
 void loop() {
@@ -60,9 +108,29 @@ void loop() {
       case 'b':
       for(int i = 0; i < nDevices; i++)
       {
-        readStr(AddressList[i], RECEIVEBUFFER_CNT);
+        if(!readStrData(AddressList[i], RECEIVEBUFFER_CNT)) Serial.println("Nothing to read");
       }
       break;
+      case 'c':
+      EnableRead = 1;
+      byte msgcmd[] = {0,EXWRITE,0,1};
+      for(int i = 0; i < nDevices; i++)
+      {
+        writeStr(AddressList[i],msgcmd,4);
+      }
+      Serial.println("Enable cycling reading");
+      break;
+    }
+  }
+
+  if (xSemaphoreTake(timerSemaphore, 0) == pdTRUE){
+    if(EnableRead){
+      for(int i = 0; i < nDevices; i++)
+      {
+        if(!readStrData(AddressList[i], RECEIVEBUFFER_CNT)) Serial.println("Nothing to read");
+      }
+    }else{
+      Serial.println("Doing nothing");
     }
   }
   
