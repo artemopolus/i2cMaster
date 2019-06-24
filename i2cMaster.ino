@@ -126,22 +126,27 @@ void loop() {
       }
       break;
       case 'c':
-      EnableRead = 1;
-      byte msgstart[] = {0,EXWRITE,0,1};
-      for(int i = 0; i < nDevices; i++)
       {
-        writeStr(AddressList[i],msgstart,4);
+        EnableRead = 1;
+        byte msgstart[] = {0,EXWRITE,0,1};
+        for(int i = 0; i < nDevices; i++)
+        {
+          writeStr(AddressList[i],msgstart,4);
+        }
+        Serial.println("Enable cycling reading");
+        break;
       }
-      Serial.println("Enable cycling reading");
-      break;
        case 'd':
-      // EnableRead = 0;
-      // byte msgstop[] = {0,EXWRITE,0,0};
-      // for(int i = 0; i < nDevices; i++)
-      // {
-      //   writeStr(AddressList[i],msgstop,4);
-      // }
-      // Serial.println("Disable cycling reading");
+       {
+        EnableRead = 0;
+        byte msgstop[] = {0,EXWRITE,0,0};
+        for(int i = 0; i < nDevices; i++)
+        {
+          writeStr(AddressList[i],msgstop,4);
+        }
+        Serial.println("Disable cycling reading");
+       }
+      
        break;
     }
   }
