@@ -133,16 +133,23 @@ int readStrData(const byte address, const int nbData)
   Serial.print(address); Serial.print("[0x"); Serial.print(address, HEX); Serial.print("]");
   Serial.print("Count=");
   Serial.print(count); Serial.print("[0x"); Serial.print(count, HEX); Serial.println("]");
-  Wire.requestFrom(address,count);
+  int Data2receive = Wire.requestFrom(address,count);
   int counter = 0, i = 0;
+  char word;
   while(Wire.available())
   {
-    char word = Wire.read();
+    word = Wire.read();
     Serial.print(word); Serial.print("[0x"); Serial.print(word, HEX); Serial.print("] ");
     ReceiveBuffer[counter] = (uint8_t)word;
     counter++;
   }
-  Serial.print("done! Data count=");
+  Serial.println("done!");
+   word = Wire.read();
+    Serial.print(word); Serial.print("[0x"); Serial.print(word, HEX); Serial.print("] ");
+  
+  Serial.print("Data gets=");
   Serial.println(counter);
+  Serial.print("Data available=");
+  Serial.println(Data2receive);
   return counter;
 }
